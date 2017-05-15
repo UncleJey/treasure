@@ -28,3 +28,7 @@ https://www.amazon.com/foranj-Treasure-Island/dp/B00Y969RIC/
 - Клад не собирается
 
 Но судя по отзывам никто не проходил её до финала
+
+
+![Slack](https://github.com/UncleJey/treasure/blob/master/img/2016-03-24_1544.png?raw=true)
+![Slack](https://github.com/UncleJey/treasure/blob/master/img/2016-03-24_15442.png?raw=true)
