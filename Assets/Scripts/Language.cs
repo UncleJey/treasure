@@ -1,25 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum strings : byte {NONE=0, INFO=1, PLAY=2, INSTRUCTIONS=3}
+public enum strings : byte { NONE = 0, INFO = 1, PLAY = 2, INSTRUCTIONS = 3 }
 
-public static class Language 
+public static class Language
 {
 
-	public static bool rus = false;
-	public static string Value(strings pName)
-	{
-		switch (pName)
-		{
-			case strings.INFO:
-				return rus?"И - Инструкция":"I - Instructions";
-			break;
-			case strings.PLAY:
-				return rus?"Н - Начало игры":"S - Start game";
-			break;
-			case strings.INSTRUCTIONS:
-				if (rus)
-				return @"              О С Т Р О В   С О К Р О В И Щ
+    public static bool rus = false;
+    public static string Value(strings pName)
+    {
+        switch (pName)
+        {
+            case strings.INFO:
+                return rus ? "И - Инструкция" : "I - Instructions";
+                break;
+            case strings.PLAY:
+                return rus ? "Н - Начало игры" : "S - Start game";
+                break;
+            case strings.INSTRUCTIONS:
+                if (rus)
+                    return @"              О С Т Р О В   С О К Р О В И Щ
                             (С)1989 С.А.Ларионов, г.Свердловск
 
         Вам нужно провести Джима по извилистым тропам Острова
@@ -36,9 +36,9 @@ public static class Language
         Удачи Вам!
                                      Нажмите <ПРОБЕЛ>
 ";
-			else
-				return
-				@"TREASURE ISLAND
+                else
+                    return
+                    @"TREASURE ISLAND
 ---------------
 
 An exciting game based upon the classic adventure by Robert Louis Stevenson,
@@ -115,9 +115,9 @@ both B and T down together will restart the game.
 (C) Mr Micro Ltd 1984
 
 (Transcribed by Robin Stuart)";
-			break;
+                break;
 
-		}
-		return pName.ToString();
-	}
+        }
+        return pName.ToString();
+    }
 }

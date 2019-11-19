@@ -1,63 +1,62 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Tilemaps;
 using System.Collections;
 using System.Collections.Generic;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
-public enum lootType:byte {NONE = 0, SWORD = 1, SCORE = 2, PIRATE = 3, PirateWithSword = 4}
-public enum GameMode:byte {NONE = 0, MENU = 1, GAME = 2, INFO = 3}
+public enum lootType : byte { NONE = 0, SWORD = 1, SCORE = 2, PIRATE = 3, PirateWithSword = 4 }
+public enum GameMode : byte { NONE = 0, MENU = 1, GAME = 2, INFO = 3 }
 
 [System.Serializable]
 public class SpriteSet
 {
-	public Sprite sprite;
-	public bool reverse = false;
+    public Sprite sprite;
+    public bool reverse = false;
+    public Tile tile;
 }
 
 [System.Serializable]
 public class cellData
 {
-	public string caption;
-	public lootType loot = lootType.NONE;
-	public Sprite mainSprite;
-	public Sprite nextSprite;
-	public SpriteSet[] sprites;
-	public bool sworded = false;
+    public string caption;
+    public lootType loot = lootType.NONE;
+    public Sprite mainSprite;
+    public Sprite nextSprite;
+    public SpriteSet[] sprites;
+    public bool sworded = false;
 }
 
-public class TheMap : MonoBehaviour 
+public class TheMap : MonoBehaviour
 {
-	public Sprite[] data;
-	public static TheMap instance;
-	public mapRow[] rows;
-	public cellData[] specCells;
-	public Text instrText;
-	public Text PlayText;
-	public Player player;
+    public Sprite[] data;
+    public Tile[] tiles;
+    [SerializeField]
+    private Tilemap tilemap;
+    public static TheMap instance;
+    public cellData[] specCells;
+    public Text instrText;
+    public Text PlayText;
+    public Player player;
 
-	public Text livesCount;
-	public Text scoreText;
-	public Sword swordPrefab;
-	GameMode gameMode = GameMode.NONE;
+    public Text livesCount;
+    public Text scoreText;
+    public Sword swordPrefab;
+    GameMode gameMode = GameMode.NONE;
 
-#if UNITY_EDITOR
-	[ContextMenuItem("Show", "showInfo")]
-	[ContextMenuItem("Load", "loadInfo")]
-	[ContextMenuItem("Clear", "clearInfo")]
-	public int sector = 0;
-#endif
-	public byte[] map;
-	static Vector2 XY=Vector2.zero;
-	public GameObject infoPanel;
-	public GameObject buttons;
-	public GameObject CloserPanel;
+    public static byte[] Map => instance.map;
+    byte[] map;
+    static Vector2 XY = Vector2.zero;
+    public GameObject infoPanel;
+    public GameObject buttons;
+    public GameObject CloserPanel;
 
-	void InitMap()
-	{
-		map = new byte[65 * 48]
-		{
+    void InitMap()
+    {
+        map = new byte[65 * 48]
+        {
 		//last row
 		/*00*/	04,01,01,01,03,01,01,02, 01,01,10,11,12,13,21,22, 02,01,29,33,52,00,00,00, 01,02,28,00,00,32,33,32, 01,01,29,00,34,35,00,00, 01,02,28,00,36,32,33,37,
 		/*01*/	01,02,01,01,05,01,06,01, 16,17,19,16,12,13,21,22, 00,00,32,33,32,33,00,00, 33,00,00,00,00,00,00,36, 00,00,00,00,00,51,00,00, 38,40,38,39,39,40,38,40,
@@ -127,303 +126,324 @@ public class TheMap : MonoBehaviour
 		/*58*/  38,40,38,40,38,40,38,40, 00,55,00,00,00,00,00,00, 36,37,37,00,00,00,36,37, 00,00,37,36,31,74,27,24, 74,26,27,24,75,01,02,01, 02,01,76,77,78,79,01,01, 
 		/*59*/  38,40,44,47,00,00,38,40, 00,00,00,36,00,00,00,00, 33,37,00,37,00,00,00,32, 31,33,55,00,00,00,32,31, 25,74,74,27,24,74,26,75, 01,01,01,05,01,06,01,01, 
 		/*60*/  38,40,00,45,46,00,37,38, 00,00,00,00,36,00,00,00, 33,37,00,00,32,33,32,33, 27,24,31,00,00,00,51,00, 01,03,25,27,24,74,74,27, 01,01,01,01,01,02,01,01, 
-		/*61*/  40,38,40,38,40,38,40,38, 00,00,52,00,00,00,00,00, 32,33,37,36,32,33,32,33, 00,00,00,00,00,48,00,00, 74,27,24,27,24,26,74,27, 01,01,76,77,78,79,01,01, //40,38,40,38,40,38,40,38, 00,00,53,00,00,00,00,00, 32,33,37,36,32,33,32,33, 00,00,00,00,00,48,00,00, 74,27,24,27,24,26,74,27, 01,01,76,77,78,79,01,01, 
+		/*61*/  40,38,40,38,40,38,40,38, 00,00,52,00,00,00,00,00, 32,33,37,36,32,33,32,33, 00,00,00,00,00,48,00,00, 74,27,24,27,24,26,74,27, 01,01,76,77,78,79,01,01,
 		/*62*/  40,38,40,38,40,37,00,37, 00,00,51,00,00,00,00,00, 32,33,57,32,33,47,32,33, 00,00,00,00,00,00,00,00, 74,27,24,27,24,26,74,27, 01,02,01,01,01,02,01,01, 
 		/*63*/  37,00,45,00,71,01,02,01, 00,00,36,00,72,01,01,01, 32,33,00,00,70,02,01,01, 00,00,51,00,72,01,01,01, 74,27,24,26,75,01,02,01, 01,05,01,06,01,01,01,04, 
 		/*Preloader*/
-				04,01,01,01,05,01,06,01, 10,21,21,11,21,19,20,73, 28,37,45,38,40,60,37,71, 28,47,00,00,00,00,00,72, 25,26,27,24,26,27,24,75, 01,76,77,78,79,01,01,01, 
-			
-		};
-	}
+				04,01,01,01,05,01,06,01, 10,21,21,11,21,19,20,73, 28,37,45,38,40,60,37,71, 28,47,00,00,00,00,00,72, 25,26,27,24,26,27,24,75, 01,76,77,78,79,01,01,01,
 
-#region Modes / режимы
-	public void ShowPreloader()
-	{
-		instrText.text = Language.Value(strings.INFO);
-		instrText.transform.parent.gameObject.SetActive(true);
-		PlayText.text = Language.Value(strings.PLAY);
-		PlayText.transform.parent.gameObject.SetActive(true);
-		loadScreen(new Vector2((map.Length / 48)-1,0), Vector2.zero);
-		player.gameObject.SetActive(false);
-		starting = false;
-		Sounds.Music ();
-		buttons.SetActive(false);
-		CloserPanel.SetActive (false);
+        };
+    }
 
-		gameMode = GameMode.MENU;
-	}
+    #region Modes / режимы
+    public void ShowPreloader()
+    {
+        instrText.text = Language.Value(strings.INFO);
+        instrText.transform.parent.gameObject.SetActive(true);
+        PlayText.text = Language.Value(strings.PLAY);
+        PlayText.transform.parent.gameObject.SetActive(true);
+        loadScreen(new Vector2((map.Length / 48) - 1, 0), Vector2.zero);
+        player.gameObject.SetActive(false);
+        starting = false;
+        Sounds.Music();
+        buttons.SetActive(false);
+        CloserPanel.SetActive(false);
 
-	public void Quit()
-	{
-		Application.Quit ();
-	}
+        gameMode = GameMode.MENU;
+    }
 
-	void showCloser()
-	{
-		CloserPanel.SetActive (true);
-	}
+    public void Quit()
+    {
+        Application.Quit();
+    }
 
-	public void ShowInformation()
-	{
-		infoPanel.SetActive (true);
-		transform.parent.gameObject.SetActive (false);
-		gameMode = GameMode.INFO;
-	}
+    void showCloser()
+    {
+        CloserPanel.SetActive(true);
+    }
 
-	bool starting = false;
-	public void doStartGame()
-	{
-		if (!starting) 
-		{
-			starting = true;
-			StartCoroutine(StartGame());
-		}
-	}
+    public void ShowInformation()
+    {
+        infoPanel.SetActive(true);
+        transform.parent.gameObject.SetActive(false);
+        gameMode = GameMode.INFO;
+    }
 
-	IEnumerator StartGame()
-	{
-		Sounds.Play (SoundType.START);
-		yield return new WaitForSeconds (2f);
+    bool starting = false;
+    public void doStartGame()
+    {
+        if (!starting)
+        {
+            starting = true;
+            StartCoroutine(StartGame());
+        }
+    }
 
-		PlayText.transform.parent.gameObject.SetActive(false);
-		instrText.transform.parent.gameObject.SetActive(false);
-		player.gameObject.SetActive(true);
-		InitMap();
-		loadScreen(Vector2.zero,new Vector2(6,4));
-		player.haveSword = true;//false;
-		player.lives = 5;
-		score = 0;
-		buttons.SetActive(true);
-		gameMode = GameMode.GAME;
-	}
+    IEnumerator StartGame()
+    {
+        Sounds.Play(SoundType.START);
+        yield return new WaitForSeconds(2f);
 
-#endregion modes
+        PlayText.transform.parent.gameObject.SetActive(false);
+        instrText.transform.parent.gameObject.SetActive(false);
+        player.gameObject.SetActive(true);
+        InitMap();
+        loadScreen(Vector2.zero, new Vector2(6, 4));
+        player.haveSword = true;//false;
+        player.lives = 5;
+        score = 0;
+        buttons.SetActive(true);
+        gameMode = GameMode.GAME;
+    }
 
-	void Awake () 
-	{
-		Language.rus = Application.systemLanguage == SystemLanguage.Russian || Application.systemLanguage == SystemLanguage.Ukrainian	|| Application.systemLanguage == SystemLanguage.Belarusian;
-		Player.instance = FindObjectOfType<Player>();
-		instance = this;
-		InitMap ();
-		QualitySettings.vSyncCount = 1;
-	}
+    #endregion modes
 
-	void Start()
-	{
-		ShowPreloader();
-	}
+    void Awake()
+    {
+        Language.rus =
+            Application.systemLanguage == SystemLanguage.Russian ||
+            Application.systemLanguage == SystemLanguage.Ukrainian ||
+            Application.systemLanguage == SystemLanguage.Belarusian;
+        Player.instance = FindObjectOfType<Player>();
+        instance = this;
+        InitMap();
+        QualitySettings.vSyncCount = 1;
+        /*
+                for (int i=0; i<data.Length; i++)
+                {
+                    Sprite s = data[i];
+                    if (s != tiles[i].sprite)
+                    {
+                        Debug.LogError(i + " "+s.name);
+                    }
+                }
+        */
+    }
 
-	void Update()
-	{
-		/*
+    void Start()
+    {
+        ShowPreloader();
+    }
+
+    void Update()
+    {
+        /*
 		foreach (KeyCode c in System.Enum.GetValues(typeof(KeyCode)))
 			if (Input.GetKeyDown (c))
 				Debug.Log (c);
 */
-		if (Input.GetKeyUp(KeyCode.Escape) || Input.GetKeyUp(KeyCode.Menu))
-		{
-			if (gameMode != GameMode.MENU)
-				ShowPreloader();
-			else
-				showCloser();
-		}
+        if (Input.GetKeyUp(KeyCode.Escape) || Input.GetKeyUp(KeyCode.Menu))
+        {
+            if (gameMode != GameMode.MENU)
+                ShowPreloader();
+            else
+                showCloser();
+        }
 
-		if (gameMode == GameMode.MENU)
-		{
-			foreach (KeyCode c in Player.Joystics)
-				if (Input.GetKeyDown (c))
-					doStartGame();
-		}
-	}
-#region map
-	int offset(Vector2 pPoint)
-	{
-		return (int)(pPoint.x * 48 + pPoint.y * 48 * 8);
-	}
-
-	public cellData getSpecCell(string pName)
-	{
-		foreach (cellData cd in specCells)
-		{
-			if (cd.mainSprite.name.Equals(pName))
-				return cd;
-		}
-		return null;
-	}
-
-	public static void updateCell(int pNo, string pNewName, TheCell who)
-	{
-		instance.map[pNo] = (byte)instance.getSpriteNo(pNewName);
-		who.init(pNo);
-	}
-
-	public void loadScreen(Vector2 pPoint, Vector2 reposPlayer)
-	{
-		exSpawnPoint = spawnPoint;	spawnPoint = reposPlayer;
-		exSpawnScreen = spawnScreen; spawnScreen = pPoint;
-		XY = pPoint;
-		int strt = offset(pPoint);
-		Debug.Log("scene "+(pPoint.x + pPoint.y * 8).ToString());
-		foreach (mapRow row in rows)
-		{
-			foreach (TheCell i in row.Columns)
-			{
-				if (data[map[strt]] == null)
-					Debug.LogError("Empty "+map[strt].ToString());
-				else
-					i.init(strt);
-				strt++;
-			}
-		}
-		if (reposPlayer.sqrMagnitude > 0)
-			Player.instance.Point = reposPlayer;
-
-		Sword[] swords = GetComponentsInChildren<Sword> (false);
-		if (swords != null && swords.Length>0)
-		foreach (Sword sword in swords)
-			Destroy(sword.gameObject);
-	}
-
-	public static bool canStep(int pX, int pY)
-	{
-		if (pX < 0 || pX > 7 || pY < 0 || pY > 5)
-		{
-			step(new Vector2(pX, pY));
-			return false;
-		}
+        if (gameMode == GameMode.MENU)
+        {
+            foreach (KeyCode c in Player.Joystics)
+                if (Input.GetKeyDown(c))
+                    doStartGame();
+        }
 		else
-			return instance.rows [pY].Columns[pX].canStep();
+		{
+			updateProducers();
+		}
+    }
+    #region map
+    int offset(Vector2 pPoint)
+    {
+        return (int)(pPoint.x * 48 + pPoint.y * 48 * 8);
+    }
+
+    public cellData getSpecCell(string pName)
+    {
+        foreach (cellData cd in specCells)
+        {
+            if (cd.mainSprite.name.Equals(pName))
+                return cd;
+        }
+        return null;
+    }
+
+    public static void updateCell(int pNo, string pNewName, TheCell who)
+    {
+        instance.map[pNo] = (byte)instance.getSpriteNo(pNewName);
+        /// who.init(pNo);
+    }
+
+    /// <summary>
+    /// Поставить тайл на экран
+    /// </summary>
+    /// <param name="pPoint">Точка на экране</param>
+    /// <param name="tileNo">Номер тайла</param>
+    private void setTile(int px, int py, int pCellNo)
+    {
+        Tile t = tiles[Map[pCellNo]];
+        tilemap.SetTile(new Vector3Int(px, py, 0), t);
+    }
+
+    /// <summary>
+    /// Поставить тайл на экран
+    /// </summary>
+    public static void SetTile(Vector2Int pPoint, Tile pTile, bool pReverse)
+    {
+        Vector3Int point = new Vector3Int(pPoint.x, pPoint.y, 0);
+        instance.tilemap.SetTile(point, pTile);
+    }
+#region producers
+    void initTileProducer(int pX, int pY, int pCellNo)
+    {
+        Tile t = tiles[Map[pCellNo]];
+		cellData cell = getSpecCell(t.sprite.name);
+        tilemap.SetTile(new Vector3Int(pX, pY, 0), t);
+		if (cell != null)
+		{
+			TheCell c = new TheCell(new Vector2Int(pX, pY), cell, pCellNo);
+			producers.Add(c);
+		}
+    }
+	List<TheCell> producers = new List<TheCell>();
+
+	void ClearProducers()
+	{
+		foreach (TheCell cell in producers)
+		{
+			cell.Stop();
+		}
+		producers.Clear();
 	}
 
-	static Vector2 exPoint = Vector2.zero;
-	public static void step(Vector2 pPoint)
+	void updateProducers()
 	{
-		if (exPoint != pPoint)
+		foreach (TheCell cell in producers)
 		{
-			exPoint = pPoint;
-			if (pPoint.y < 0)
-			{
-				XY.y--;
-				instance.loadScreen (XY, new Vector2(pPoint.x, 5));
-			}
-			else if (pPoint.y > 5)
-			{
-				XY.y++;
-				instance.loadScreen (XY, new Vector2(pPoint.x, 0));
-			}
-			else if (pPoint.x < 0)
-			{
-				XY.x--;
-				instance.loadScreen (XY, new Vector2(7, pPoint.y));
-			}
-			else if (pPoint.x > 7)
-			{
-				XY.x++;
-				instance.loadScreen (XY, new Vector2(0, pPoint.y));
-			}
-			else
-				instance.rows [(int) pPoint.y].Columns[(int)pPoint.x].step();
+			cell.Update();
 		}
 	}
-#endregion map
+#endregion producers
 
-#if UNITY_EDITOR	
-	void showInfo()
-	{
-		string res = "";
-		int sn = 0;
-		foreach (mapRow row in rows)
-		{
-			foreach (TheCell i in row.Columns)
-			{
-				sn = getSpriteNo(i.image.sprite.name);
-				if (sn < 0)
-					Debug.Log("empty !");
-				res += sn.ToString().PadLeft(2,'0')+",";
-			}
-			res += " ";
-		}
-		Debug.Log (res);
-	}
+    public void loadScreen(Vector2 pPoint, Vector2 reposPlayer)
+    {
+		ClearProducers();
+        exSpawnPoint = spawnPoint;
+        spawnPoint = reposPlayer;
+        exSpawnScreen = spawnScreen;
+        spawnScreen = pPoint;
+        XY = pPoint;
+        int strt = offset(pPoint);
 
-	void loadInfo()
-	{
-		InitMap ();
-		int strt = 48 * sector;
-		foreach (mapRow row in rows)
-		{
-			foreach (TheCell i in row.Columns)
-			{
-				if (data[map[strt]] == null)
-					Debug.Log("Empty "+map[strt].ToString());
-				else
-					i.image.sprite = data[map[strt]];
-				EditorUtility.SetDirty(i);
-				strt++;
-			}
-		}
-	}
-	
-	public void clearInfo()
-	{
-		foreach (mapRow row in rows)
-			foreach (TheCell i in row.Columns) 
-			{
-				i.image.sprite = data [0];
-				EditorUtility.SetDirty(i);
-			}
-	}
-#endif
+        for (int y = 0; y < 6; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                initTileProducer(x, y, strt);
+                strt++;
+            }
+        }
 
-	#region images
-	int getSpriteNo(string sName)
-	{
-		for (int i=0; i<data.Length; i++)
-		{
-			if (data[i] != null && data[i].name == sName)
-				return i;
+        if (reposPlayer.sqrMagnitude > 0)
+            Player.instance.Point = reposPlayer;
 
-		}
-		return -1;
-	}
+        Sword[] swords = GetComponentsInChildren<Sword>(false);
+        if (swords != null && swords.Length > 0)
+            foreach (Sword sword in swords)
+                Destroy(sword.gameObject);
+    }
 
-	#endregion images
+    public static bool canStep(int pX, int pY)
+    {
+        if (pX < 0 || pX > 7 || pY < 0 || pY > 5)
+        {
+            step(new Vector2(pX, pY));
+            return false;
+        }
+        else
+            return true; //instance.rows[pY].Columns[pX].canStep();
+    }
 
-#region GameEvents
-	static Vector2 spawnScreen, exSpawnScreen = Vector2.zero;
-	static Vector2 spawnPoint, exSpawnPoint = Vector2.zero;
+    static Vector2 exPoint = Vector2.zero;
+    public static void step(Vector2 pPoint)
+    {
+        if (exPoint != pPoint)
+        {
+            exPoint = pPoint;
+            if (pPoint.y < 0)
+            {
+                XY.y--;
+                instance.loadScreen(XY, new Vector2(pPoint.x, 5));
+            }
+            else if (pPoint.y > 5)
+            {
+                XY.y++;
+                instance.loadScreen(XY, new Vector2(pPoint.x, 0));
+            }
+            else if (pPoint.x < 0)
+            {
+                XY.x--;
+                instance.loadScreen(XY, new Vector2(7, pPoint.y));
+            }
+            else if (pPoint.x > 7)
+            {
+                XY.x++;
+                instance.loadScreen(XY, new Vector2(0, pPoint.y));
+            }
+//            else
+  //              instance.rows[(int)pPoint.y].Columns[(int)pPoint.x].step();
+        }
+    }
+    #endregion map
 
-	public static void playerDie()
-	{
-		instance.player.haveSword = false;
-		instance.player.lives --;
-		if (instance.player.lives > 0)
-			instance.loadScreen (exSpawnScreen, exSpawnPoint);
-		else
-			instance.ShowPreloader ();
-	}
+    #region images
+    int getSpriteNo(string sName)
+    {
+        for (int i = 0; i < data.Length; i++)
+        {
+            if (data[i] != null && data[i].name == sName)
+                return i;
 
-	int _score = 0;
-	public int score
-	{
-		get
-		{
-			return _score;
-		}
-		set
-		{
-			_score = value;
-			scoreText.text = value.ToString().PadLeft(3,'0');
-		}
-	}
+        }
+        return -1;
+    }
 
-	public void dropSword(Vector2 pPosition, Vector2 pDirection, bool isPlayer, TheCell owner)
-	{
-		GameObject go = Instantiate (swordPrefab.gameObject);
-		go.GetComponent<RectTransform> ().SetParent (transform);
-		go.transform.localScale = Vector3.one;
-		Sword sw = go.GetComponent <Sword> ();
-		sw.drop (pPosition, pDirection, isPlayer, owner);
-	}
-#endregion
+    #endregion images
+
+    #region GameEvents
+    static Vector2 spawnScreen, exSpawnScreen = Vector2.zero;
+    static Vector2 spawnPoint, exSpawnPoint = Vector2.zero;
+
+    public static void playerDie()
+    {
+        instance.player.haveSword = false;
+        instance.player.lives--;
+        if (instance.player.lives > 0)
+            instance.loadScreen(exSpawnScreen, exSpawnPoint);
+        else
+            instance.ShowPreloader();
+    }
+
+    int _score = 0;
+    public int score
+    {
+        get
+        {
+            return _score;
+        }
+        set
+        {
+            _score = value;
+            scoreText.text = value.ToString().PadLeft(3, '0');
+        }
+    }
+
+    public void dropSword(Vector3 pPosition, Vector2 pDirection, bool isPlayer, TheCell owner)
+    {
+        GameObject go = Instantiate(swordPrefab.gameObject);
+        go.GetComponent<RectTransform>().SetParent(transform);
+        go.transform.localScale = Vector3.one;
+        Sword sw = go.GetComponent<Sword>();
+        sw.drop(pPosition, pDirection, isPlayer, owner);
+    }
+    #endregion
 }
