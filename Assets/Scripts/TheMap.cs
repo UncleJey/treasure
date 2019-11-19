@@ -208,6 +208,7 @@ public class TheMap : MonoBehaviour
         instance = this;
         InitMap();
         QualitySettings.vSyncCount = 1;
+		Application.targetFrameRate = 60;
         /*
                 for (int i=0; i<data.Length; i++)
                 {
