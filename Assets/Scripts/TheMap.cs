@@ -280,8 +280,8 @@ public class TheMap : MonoBehaviour
 
 		Sword[] swords = GetComponentsInChildren<Sword> (false);
 		if (swords != null && swords.Length>0)
-		foreach (Sword sword in swords)
-			Destroy(sword.gameObject);
+			foreach (Sword sword in swords)
+				Destroy(sword.gameObject);
 	}
 
 	public static bool canStep(int pX, int pY)
@@ -413,7 +413,7 @@ public class TheMap : MonoBehaviour
 		set
 		{
 			_score = value;
-			scoreText.text = value.ToString().PadLeft(3,'0');
+			scoreText.text = "Score :\n" + value.ToString().PadLeft(3,'0');
 		}
 	}
 
