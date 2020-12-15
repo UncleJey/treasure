@@ -2,20 +2,20 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public enum mobDir : byte {NONE = 0, UP = 1, DOWN=2, LEFT=3, RIGHT = 4}
+public enum MobDir : byte {NONE = 0, UP = 1, DOWN=2, LEFT=3, RIGHT = 4}
 
 [System.Serializable]
-public class spriteSettings
+public class SpriteSettings
 {
 	public Sprite[] sprites;
 	public bool reverse = false;
-	public mobDir direction;
+	public MobDir direction;
 	public bool haveSword = false;
 }
 
 public class Player : MonoBehaviour 
 {
-	public spriteSettings[] sprites;
+	public SpriteSettings[] sprites;
 
 	float scale = 400;
 	float spriteIntervalChange = 0.01f;
@@ -24,13 +24,13 @@ public class Player : MonoBehaviour
 	float h,v;
 	public RectTransform rt;
 
-	int sprNo = 0;
-	Image img;
+	int _sprNo = 0;
+	Image _img;
 	public static Player instance;
 	int _lives = 0;
 
 	bool _haveSword = false;
-	public bool haveSword
+	public bool HaveSword
 	{
 		get
 		{
@@ -39,51 +39,48 @@ public class Player : MonoBehaviour
 		set
 		{
 			_haveSword = value;
-			changeSprite();
+			ChangeSprite();
 		}
 	}
 
 
-	public int lives
+	public int Lives
 	{
-		get
-		{
-			return _lives;
-		}
+		get => _lives;
 		set
 		{
 			_lives = value;
-			TheMap.instance.livesCount.text = value.ToString();
+			TheMap.instance.livesCount.text = $"Man: {value}";
 		}
 	}
 
 	void Awake () 
 	{
 		rt = GetComponent<RectTransform> ();
-		img = GetComponent<Image> ();
+		_img = GetComponent<Image> ();
 		instance = this;
 	}
 
-	void changeSprite()
+	void ChangeSprite()
 	{
-		mobDir md = mobDir.NONE;
-		if (direction.x > 0)
-			md = mobDir.RIGHT;
-		else if (direction.x < 0)
-			md = mobDir.LEFT;
-		else if (direction.y > 0)
-			md = mobDir.UP;
-		else if (direction.y < 0)
-			md = mobDir.DOWN;
+		MobDir md = MobDir.NONE;
+		if (_direction.x > 0)
+			md = MobDir.RIGHT;
+		else if (_direction.x < 0)
+			md = MobDir.LEFT;
+		else if (_direction.y > 0)
+			md = MobDir.UP;
+		else if (_direction.y < 0)
+			md = MobDir.DOWN;
 
-		sprNo++;
-		foreach (spriteSettings ss in sprites)
+		_sprNo++;
+		foreach (SpriteSettings ss in sprites)
 		{
 			if (ss.direction == md && ss.haveSword == _haveSword)
 			{
-				if (sprNo >= ss.sprites.Length)
-					sprNo = 0;
-				img.sprite = ss.sprites[sprNo];
+				if (_sprNo >= ss.sprites.Length)
+					_sprNo = 0;
+				_img.sprite = ss.sprites[_sprNo];
 				if (ss.reverse && rt.localScale.x > 0)
 					rt.localScale = new Vector3(-1,1,1);
 				else if (!ss.reverse && rt.localScale.x < 0)
@@ -102,26 +99,28 @@ public class Player : MonoBehaviour
 		}
 		set
 		{
-			rt.anchoredPosition = new Vector2(value.x * 120 + rt.sizeDelta.x / 2, value.y * 120 + rt.sizeDelta.y / 4);
+			var sizeDelta = rt.sizeDelta;
+			rt.anchoredPosition = new Vector2(value.x * 120 + sizeDelta.x / 2, value.y * 120 + sizeDelta.y / 4);
 		}
 	}
 
 	bool checkPoint(float pX, float pY)
 	{
-		int XX = pX < 0 ? -1 : (int)(pX / 120);
-		int YY = pY < 0 ? -1 : (int)(pY / 120);
-		return TheMap.canStep(XX, YY);
+		int xx = pX < 0 ? -1 : (int)(pX / 120);
+		int yy = pY < 0 ? -1 : (int)(pY / 120);
+		return TheMap.CanStep(xx, yy);
 	}
 
 	public Vector4 Position
 	{
 		get
 		{
-			return new Vector4 (rt.anchoredPosition.x - rt.sizeDelta.x / 2 + 10, rt.anchoredPosition.y, rt.anchoredPosition.x + rt.sizeDelta.x / 2 - 10, rt.anchoredPosition.y + rt.sizeDelta.y);
+			Vector2 anchoredPosition;
+			return new Vector4 (rt.anchoredPosition.x - rt.sizeDelta.x / 2 + 10, (anchoredPosition = rt.anchoredPosition).y, anchoredPosition.x + rt.sizeDelta.x / 2 - 10, rt.anchoredPosition.y + rt.sizeDelta.y);
 		}
 	}
 
-	Vector2 direction = Vector2.right;
+	Vector2 _direction = Vector2.right;
 	public static KeyCode[] Joystics = new KeyCode[] 
 	{
 		 KeyCode.JoystickButton0	// треугольник
@@ -139,28 +138,25 @@ public class Player : MonoBehaviour
 		,KeyCode.Space				// Пробел
 	};
 
-	Vector3 mousePos = Vector3.zero;
-	float distance = 0;
-	void checkMove()
+	Vector3 _mousePos = Vector3.zero;
+	void CheckMove()
 	{
 		if (Input.GetMouseButtonDown(0))
 		{
 //			if (mousePos == Vector3.zero)
-				mousePos = Input.mousePosition;
-			distance = 0;
+				_mousePos = Input.mousePosition;
 		}
 		
 		if (Input.GetMouseButtonUp (0)) 
 		{
-			distance = 0;
-			hh = 0;
-			vv = 0;
+			_hh = 0;
+			_vv = 0;
 		}
 		
 		if (Input.GetMouseButton(0))// GetMouseButtonUp(0))
 		{
-			float dx = Input.mousePosition.x - mousePos.x;
-			float dy = Input.mousePosition.y - mousePos.y;
+			float dx = Input.mousePosition.x - _mousePos.x;
+			float dy = Input.mousePosition.y - _mousePos.y;
 			
 			float adx = dx<0?0-dx:dx;
 			float ady = dy<0?0-dy:dy;
@@ -168,21 +164,20 @@ public class Player : MonoBehaviour
 			if (adx + ady > 25)
 			{
 				//Debug.Log(adx + ady);
-				distance = 45;
-				mousePos = Input.mousePosition;
+				_mousePos = Input.mousePosition;
 				if (adx > ady)
 				{
 					if (dx > 0)
-						hh = 1 ;//moveRight();
+						_hh = 1 ;//moveRight();
 					else
-						hh = -1;//moveLeft();
+						_hh = -1;//moveLeft();
 				}
 				else
 				{
 					if (dy < 0)
-						vv = -1;//moveBack();
+						_vv = -1;//moveBack();
 					else
-						vv = 1;//	boost();
+						_vv = 1;//	boost();
 				}
 			}
 			//mousePos = Vector3.zero;
@@ -193,23 +188,23 @@ public class Player : MonoBehaviour
 	{
 		foreach (KeyCode c in Joystics)
 			if (Input.GetKeyDown (c))
-				space = true;
+				_space = true;
 
-		if (haveSword && space) 
+		if (HaveSword && _space) 
 		{
-			haveSword = false;
-			TheMap.instance.dropSword (rt.anchoredPosition + Vector2.up * 30, direction, true, null);
+			HaveSword = false;
+			TheMap.instance.DropSword (rt.anchoredPosition + Vector2.up * 30, _direction, true, null);
 			return;
 		}
 
-		space = false;
+		_space = false;
 
 		h = Input.GetAxisRaw("Horizontal");	// left -1 right +1
 		v = Input.GetAxisRaw("Vertical");	// up + 1 down -1
 		if (v == 0 && h == 0)
 		{
-			checkMove();
-			h = hh; v = vv;
+			CheckMove();
+			h = _hh; v = _vv;
 			//hh = 0;
 			//vv = 0;
 			if (v == 0 && h == 0)
@@ -250,32 +245,34 @@ public class Player : MonoBehaviour
 		}
 
 		if (h > 0)
-			direction = Vector2.right;
+			_direction = Vector2.right;
 		else if (h < 0)
-			direction = -Vector2.right;
+			_direction = -Vector2.right;
 		else if (v > 0)
-			direction = Vector2.up;
+			_direction = Vector2.up;
 		else if (v < 0)
-			direction = -Vector2.up;
+			_direction = -Vector2.up;
 		else
 			return;
 
 		if (_spriteIntervalChange < 0)
 		{
 			_spriteIntervalChange = spriteIntervalChange;
-			changeSprite ();
+			ChangeSprite ();
 		}
 		else
 			_spriteIntervalChange -= Time.deltaTime;
 
-		rt.anchoredPosition = new Vector2(rt.anchoredPosition.x + h * delta, rt.anchoredPosition.y + v * delta);
+		var anchoredPosition = rt.anchoredPosition;
+		anchoredPosition = new Vector2(anchoredPosition.x + h * delta, anchoredPosition.y + v * delta);
+		rt.anchoredPosition = anchoredPosition;
 
-		TheMap.step (Point);
+		TheMap.Step (Point);
 	}
 
-	int hh=0;
-	int vv=0;
-	bool space = false;
+	int _hh=0;
+	int _vv=0;
+	bool _space = false;
 
 	public void goDown()
 	{
@@ -299,6 +296,6 @@ public class Player : MonoBehaviour
 
 	public void goFight()
 	{
-		space = true;
+		_space = true;
 	}
 }

@@ -85,7 +85,7 @@ public class Sword : MonoBehaviour
 				case hitType.NONE:
 				break;
 				case hitType.PIRATE:
-					TheMap.instance.score += 1;
+					TheMap.instance.Score += 1;
 					Destroy(gameObject);
 				break;
 			}
@@ -108,7 +108,7 @@ public class Sword : MonoBehaviour
 
 				if (Intersection(Player.instance.Position, Position))
 				{
-					TheMap.playerDie();
+					TheMap.PlayerDie();
 					Sounds.Play(SoundType.DIE);
 					Destroy(gameObject);
 				}
@@ -117,7 +117,7 @@ public class Sword : MonoBehaviour
 			{
 				if (Intersection(Player.instance.Position, Position))
 				{
-					Player.instance.haveSword = true;
+					Player.instance.HaveSword = true;
 					Sounds.Play(SoundType.SCORE);
 					playerBy = true;
 					if (myOwner != null)

@@ -7,7 +7,7 @@ public enum hitType: byte {NONE = 0, PIRATE = 1, FOREST = 2}
 public class TheCell : MonoBehaviour 
 {
 	Image _image = null;
-	public cellData myCell;
+	public CellData myCell;
 	public bool animated = false;
 	int myCellNo = 0;
 	int _frame;
@@ -41,9 +41,9 @@ public class TheCell : MonoBehaviour
 		image.sprite = TheMap.instance.data[TheMap.instance.map[pCellNo]];
 		if (myCell != null)
 			image.rectTransform.localScale = Vector3.one;
-		myCell = TheMap.instance.getSpecCell(image.sprite.name);
+		myCell = TheMap.instance.GETSpecCell(image.sprite.name);
 
-		needUpdate = myCell != null && myCell.loot != lootType.NONE && myCell.sprites.Length > 1;
+		needUpdate = myCell != null && myCell.loot != LootType.NONE && myCell.sprites.Length > 1;
 		_frame = -1;
 		_counter = 1;
 		if (myCell != null)
@@ -76,12 +76,12 @@ public class TheCell : MonoBehaviour
 						if (pl.x - colNo > 0 && pl.x - colNo < 3)
 						{
 							sworded = false;
-							TheMap.instance.dropSword(rt.anchoredPosition, Vector2.right, false, this);
+							TheMap.instance.DropSword(rt.anchoredPosition, Vector2.right, false, this);
 						}
 						else if (pl.x - colNo < 0 && pl.x - colNo > -3)
 						{
 							sworded = false;
-							TheMap.instance.dropSword(rt.anchoredPosition, -Vector2.right, false, this);
+							TheMap.instance.DropSword(rt.anchoredPosition, -Vector2.right, false, this);
 						}
 					}
 				}
@@ -95,7 +95,7 @@ public class TheCell : MonoBehaviour
 			return true;
 
 		if (myCell != null)
-			return myCell.loot != lootType.NONE;
+			return myCell.loot != LootType.NONE;
 
 		return false;
 	}
@@ -106,22 +106,22 @@ public class TheCell : MonoBehaviour
 		{
 			switch(myCell.loot)
 			{
-				case lootType.PirateWithSword:
-				case lootType.PIRATE:
+				case LootType.PIRATE_WITH_SWORD:
+				case LootType.PIRATE:
 					Sounds.Play(SoundType.DIE);
-					TheMap.playerDie();
+					TheMap.PlayerDie();
 				break;
-				case lootType.SCORE:
+				case LootType.SCORE:
 					Sounds.Play(SoundType.SCORE);
-					TheMap.instance.score += 3;
-					TheMap.updateCell(myCellNo, myCell.nextSprite.name, this);	
+					TheMap.instance.Score += 3;
+					TheMap.UpdateCell(myCellNo, myCell.nextSprite.name, this);	
 				break;
-				case lootType.SWORD:
+				case LootType.SWORD:
 					Sounds.Play(SoundType.SCORE);
-					Player.instance.haveSword = true;
-					TheMap.updateCell(myCellNo, myCell.nextSprite.name, this);	
+					Player.instance.HaveSword = true;
+					TheMap.UpdateCell(myCellNo, myCell.nextSprite.name, this);	
 				break;
-				case lootType.NONE:
+				case LootType.NONE:
 				break;
 				default:
 					Debug.LogError("unknow loot "+myCell.loot.ToString());
@@ -140,18 +140,18 @@ public class TheCell : MonoBehaviour
 		{
 			switch (myCell.loot)
 			{
-				case lootType.PIRATE:
-				case lootType.PirateWithSword:
+				case LootType.PIRATE:
+				case LootType.PIRATE_WITH_SWORD:
 					if (isPlayer)
 					{
-						TheMap.updateCell(myCellNo, "empty", this);
+						TheMap.UpdateCell(myCellNo, "empty", this);
 						Sounds.Play(SoundType.DIE);
 						return  hitType.PIRATE;
 					}
 					else
 						return hitType.NONE;
 				break;
-				case lootType.NONE:	// хз что
+				case LootType.NONE:	// хз что
 				break;
 				default:
 					return hitType.NONE;	// через лут пролетает
@@ -164,7 +164,7 @@ public class TheCell : MonoBehaviour
 	public void nextState()
 	{
 		if (myCell != null && myCell.nextSprite != null)
-			TheMap.updateCell(myCellNo, myCell.nextSprite.name, this);	
+			TheMap.UpdateCell(myCellNo, myCell.nextSprite.name, this);	
 	}
 
 }

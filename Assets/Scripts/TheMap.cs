@@ -1,12 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
-using System.Collections.Generic;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
-public enum lootType:byte {NONE = 0, SWORD = 1, SCORE = 2, PIRATE = 3, PirateWithSword = 4}
+public enum LootType:byte {NONE = 0, SWORD = 1, SCORE = 2, PIRATE = 3, PIRATE_WITH_SWORD = 4}
 public enum GameMode:byte {NONE = 0, MENU = 1, GAME = 2, INFO = 3}
 
 [System.Serializable]
@@ -17,10 +13,10 @@ public class SpriteSet
 }
 
 [System.Serializable]
-public class cellData
+public class CellData
 {
 	public string caption;
-	public lootType loot = lootType.NONE;
+	public LootType loot = LootType.NONE;
 	public Sprite mainSprite;
 	public Sprite nextSprite;
 	public SpriteSet[] sprites;
@@ -32,7 +28,7 @@ public class TheMap : MonoBehaviour
 	public Sprite[] data;
 	public static TheMap instance;
 	public mapRow[] rows;
-	public cellData[] specCells;
+	public CellData[] specCells;
 	public Text instrText;
 	public Text PlayText;
 	public Player player;
@@ -40,7 +36,7 @@ public class TheMap : MonoBehaviour
 	public Text livesCount;
 	public Text scoreText;
 	public Sword swordPrefab;
-	GameMode gameMode = GameMode.NONE;
+	GameMode _gameMode = GameMode.NONE;
 
 #if UNITY_EDITOR
 	[ContextMenuItem("Show", "showInfo")]
@@ -49,7 +45,7 @@ public class TheMap : MonoBehaviour
 	public int sector = 0;
 #endif
 	public byte[] map;
-	static Vector2 XY=Vector2.zero;
+	static Vector2 _xy=Vector2.zero;
 	public GameObject infoPanel;
 	public GameObject buttons;
 	public GameObject CloserPanel;
@@ -120,7 +116,7 @@ public class TheMap : MonoBehaviour
 		/*52*/  37,00,46,45,46,00,36,37, 00,49,58,63,59,00,00,00, 37,30,45,46,44,46,45,37, 46,00,00,00,00,00,00,46, 45,00,51,00,00,00,00,45, 36,46,00,45,45,00,46,37, 
 		/*53*/  32,33,00,37,32,33,32,33, 00,00,52,00,36,49,00,00, 32,33,00,00,32,31,33,32, 46,00,00,00,00,37,00,57, 45,00,00,00,00,00,00,00, 40,38,40,38,40,38,40,38, 
 		/*54*/  38,40,38,40,38,40,38,40, 00,00,00,00,00,00,00,38, 33,32,33,32,33,00,00,37, 36,00,00,00,36,00,00,38, 00,00,00,55,56,37,00,37, 32,33,32,33,32,33,00,38, 
-		/*55*/ 30,00,36,00,72,01,01,01, 45,00,46,00,71,01,02,01, 37,00,45,52,70,01,01,01, 44,00,36,00,71,03,01,01, 45,00,46,00,70,01,01,01, 36,00,45,00,71,02,01,01, 
+		/*55*/  30,00,36,00,72,01,01,01, 45,00,46,00,71,01,02,01, 37,00,45,52,70,01,01,01, 44,00,36,00,71,03,01,01, 45,00,46,00,70,01,01,01, 36,00,45,00,71,02,01,01, 
 			/*8 ряд*/
 		/*56*/  01,01,28,00,41,42,43,42, 02,01,18,00,57,65,00,00, 01,01,29,00,45,41,42,43, 01,02,28,00,62,00,52,00, 01,01,25,27,24,74,26,74, 04,02,01,05,01,06,01,01, 
 		/*57*/  30,38,40,38,40,57,38,40, 00,52,00,00,00,00,00,00, 36,32,33,32,33,32,33,37, 00,00,00,00,00,00,00,00, 74,26,27,24,27,24,26,27, 01,01,03,01,01,01,02,01, 
@@ -143,14 +139,14 @@ public class TheMap : MonoBehaviour
 		instrText.transform.parent.gameObject.SetActive(true);
 		PlayText.text = Language.Value(strings.PLAY);
 		PlayText.transform.parent.gameObject.SetActive(true);
-		loadScreen(new Vector2((map.Length / 48)-1,0), Vector2.zero);
+		LoadScreen(new Vector2((map.Length / 48)-1,0), Vector2.zero);
 		player.gameObject.SetActive(false);
-		starting = false;
+		_starting = false;
 		Sounds.Music ();
 		buttons.SetActive(false);
 		CloserPanel.SetActive (false);
 
-		gameMode = GameMode.MENU;
+		_gameMode = GameMode.MENU;
 	}
 
 	public void Quit()
@@ -158,7 +154,7 @@ public class TheMap : MonoBehaviour
 		Application.Quit ();
 	}
 
-	void showCloser()
+	void ShowCloser()
 	{
 		CloserPanel.SetActive (true);
 	}
@@ -167,15 +163,19 @@ public class TheMap : MonoBehaviour
 	{
 		infoPanel.SetActive (true);
 		transform.parent.gameObject.SetActive (false);
-		gameMode = GameMode.INFO;
+		_gameMode = GameMode.INFO;
 	}
 
-	bool starting = false;
-	public void doStartGame()
+	bool _starting = false;
+
+	/// <summary>
+	/// Начало игры. Биндится на кнопку
+	/// </summary>
+	public void DoStartGame()
 	{
-		if (!starting) 
+		if (!_starting) 
 		{
-			starting = true;
+			_starting = true;
 			StartCoroutine(StartGame());
 		}
 	}
@@ -189,23 +189,26 @@ public class TheMap : MonoBehaviour
 		instrText.transform.parent.gameObject.SetActive(false);
 		player.gameObject.SetActive(true);
 		InitMap();
-		loadScreen(Vector2.zero,new Vector2(6,4));
-		player.haveSword = true;//false;
-		player.lives = 5;
-		score = 0;
+		LoadScreen(Vector2.zero,new Vector2(6,4));
+		player.HaveSword = true;//false;
+		player.Lives = 5;
+		Score = 0;
 		buttons.SetActive(true);
-		gameMode = GameMode.GAME;
+		_gameMode = GameMode.GAME;
 	}
 
 #endregion modes
 
 	void Awake () 
 	{
+		QualitySettings.vSyncCount = 1;
+		Application.targetFrameRate = 50;
+		QualitySettings.maxQueuedFrames = 3;
+
 		Language.rus = Application.systemLanguage == SystemLanguage.Russian || Application.systemLanguage == SystemLanguage.Ukrainian	|| Application.systemLanguage == SystemLanguage.Belarusian;
 		Player.instance = FindObjectOfType<Player>();
 		instance = this;
 		InitMap ();
-		QualitySettings.vSyncCount = 1;
 	}
 
 	void Start()
@@ -215,24 +218,19 @@ public class TheMap : MonoBehaviour
 
 	void Update()
 	{
-		/*
-		foreach (KeyCode c in System.Enum.GetValues(typeof(KeyCode)))
-			if (Input.GetKeyDown (c))
-				Debug.Log (c);
-*/
 		if (Input.GetKeyUp(KeyCode.Escape) || Input.GetKeyUp(KeyCode.Menu))
 		{
-			if (gameMode != GameMode.MENU)
+			if (_gameMode != GameMode.MENU)
 				ShowPreloader();
 			else
-				showCloser();
+				ShowCloser();
 		}
 
-		if (gameMode == GameMode.MENU)
+		if (_gameMode == GameMode.MENU)
 		{
 			foreach (KeyCode c in Player.Joystics)
 				if (Input.GetKeyDown (c))
-					doStartGame();
+					DoStartGame();
 		}
 	}
 #region map
@@ -241,9 +239,9 @@ public class TheMap : MonoBehaviour
 		return (int)(pPoint.x * 48 + pPoint.y * 48 * 8);
 	}
 
-	public cellData getSpecCell(string pName)
+	public CellData GETSpecCell(string pName)
 	{
-		foreach (cellData cd in specCells)
+		foreach (CellData cd in specCells)
 		{
 			if (cd.mainSprite.name.Equals(pName))
 				return cd;
@@ -251,28 +249,27 @@ public class TheMap : MonoBehaviour
 		return null;
 	}
 
-	public static void updateCell(int pNo, string pNewName, TheCell who)
+	public static void UpdateCell(int pNo, string pNewName, TheCell who)
 	{
-		instance.map[pNo] = (byte)instance.getSpriteNo(pNewName);
+		instance.map[pNo] = (byte)instance.GETSpriteNo(pNewName);
 		who.init(pNo);
 	}
 
-	public void loadScreen(Vector2 pPoint, Vector2 reposPlayer)
+	public void LoadScreen(Vector2 pPoint, Vector2 reposPlayer)
 	{
-		exSpawnPoint = spawnPoint;	spawnPoint = reposPlayer;
-		exSpawnScreen = spawnScreen; spawnScreen = pPoint;
-		XY = pPoint;
-		int strt = offset(pPoint);
-		Debug.Log("scene "+(pPoint.x + pPoint.y * 8).ToString());
+		_exSpawnPoint = _spawnPoint;	_spawnPoint = reposPlayer;
+		_exSpawnScreen = _spawnScreen; _spawnScreen = pPoint;
+		_xy = pPoint;
+		int start = offset(pPoint);
 		foreach (mapRow row in rows)
 		{
 			foreach (TheCell i in row.Columns)
 			{
-				if (data[map[strt]] == null)
-					Debug.LogError("Empty "+map[strt].ToString());
+				if (data[map[start]] == null)
+					Debug.LogError("Empty "+map[start].ToString());
 				else
-					i.init(strt);
-				strt++;
+					i.init(start);
+				start++;
 			}
 		}
 		if (reposPlayer.sqrMagnitude > 0)
@@ -284,42 +281,42 @@ public class TheMap : MonoBehaviour
 				Destroy(sword.gameObject);
 	}
 
-	public static bool canStep(int pX, int pY)
+	public static bool CanStep(int pX, int pY)
 	{
 		if (pX < 0 || pX > 7 || pY < 0 || pY > 5)
 		{
-			step(new Vector2(pX, pY));
+			Step(new Vector2(pX, pY));
 			return false;
 		}
 		else
 			return instance.rows [pY].Columns[pX].canStep();
 	}
 
-	static Vector2 exPoint = Vector2.zero;
-	public static void step(Vector2 pPoint)
+	static Vector2 _exPoint = Vector2.zero;
+	public static void Step(Vector2 pPoint)
 	{
-		if (exPoint != pPoint)
+		if (_exPoint != pPoint)
 		{
-			exPoint = pPoint;
+			_exPoint = pPoint;
 			if (pPoint.y < 0)
 			{
-				XY.y--;
-				instance.loadScreen (XY, new Vector2(pPoint.x, 5));
+				_xy.y--;
+				instance.LoadScreen (_xy, new Vector2(pPoint.x, 5));
 			}
 			else if (pPoint.y > 5)
 			{
-				XY.y++;
-				instance.loadScreen (XY, new Vector2(pPoint.x, 0));
+				_xy.y++;
+				instance.LoadScreen (_xy, new Vector2(pPoint.x, 0));
 			}
 			else if (pPoint.x < 0)
 			{
-				XY.x--;
-				instance.loadScreen (XY, new Vector2(7, pPoint.y));
+				_xy.x--;
+				instance.LoadScreen (_xy, new Vector2(7, pPoint.y));
 			}
 			else if (pPoint.x > 7)
 			{
-				XY.x++;
-				instance.loadScreen (XY, new Vector2(0, pPoint.y));
+				_xy.x++;
+				instance.LoadScreen (_xy, new Vector2(0, pPoint.y));
 			}
 			else
 				instance.rows [(int) pPoint.y].Columns[(int)pPoint.x].step();
@@ -327,56 +324,9 @@ public class TheMap : MonoBehaviour
 	}
 #endregion map
 
-#if UNITY_EDITOR	
-	void showInfo()
-	{
-		string res = "";
-		int sn = 0;
-		foreach (mapRow row in rows)
-		{
-			foreach (TheCell i in row.Columns)
-			{
-				sn = getSpriteNo(i.image.sprite.name);
-				if (sn < 0)
-					Debug.Log("empty !");
-				res += sn.ToString().PadLeft(2,'0')+",";
-			}
-			res += " ";
-		}
-		Debug.Log (res);
-	}
+#region images
 
-	void loadInfo()
-	{
-		InitMap ();
-		int strt = 48 * sector;
-		foreach (mapRow row in rows)
-		{
-			foreach (TheCell i in row.Columns)
-			{
-				if (data[map[strt]] == null)
-					Debug.Log("Empty "+map[strt].ToString());
-				else
-					i.image.sprite = data[map[strt]];
-				EditorUtility.SetDirty(i);
-				strt++;
-			}
-		}
-	}
-	
-	public void clearInfo()
-	{
-		foreach (mapRow row in rows)
-			foreach (TheCell i in row.Columns) 
-			{
-				i.image.sprite = data [0];
-				EditorUtility.SetDirty(i);
-			}
-	}
-#endif
-
-	#region images
-	int getSpriteNo(string sName)
+	int GETSpriteNo(string sName)
 	{
 		for (int i=0; i<data.Length; i++)
 		{
@@ -387,24 +337,24 @@ public class TheMap : MonoBehaviour
 		return -1;
 	}
 
-	#endregion images
+#endregion images
 
 #region GameEvents
-	static Vector2 spawnScreen, exSpawnScreen = Vector2.zero;
-	static Vector2 spawnPoint, exSpawnPoint = Vector2.zero;
+	static Vector2 _spawnScreen, _exSpawnScreen = Vector2.zero;
+	static Vector2 _spawnPoint, _exSpawnPoint = Vector2.zero;
 
-	public static void playerDie()
+	public static void PlayerDie()
 	{
-		instance.player.haveSword = false;
-		instance.player.lives --;
-		if (instance.player.lives > 0)
-			instance.loadScreen (exSpawnScreen, exSpawnPoint);
+		instance.player.HaveSword = false;
+		instance.player.Lives --;
+		if (instance.player.Lives > 0)
+			instance.LoadScreen (_exSpawnScreen, _exSpawnPoint);
 		else
 			instance.ShowPreloader ();
 	}
 
 	int _score = 0;
-	public int score
+	public int Score
 	{
 		get
 		{
@@ -417,7 +367,7 @@ public class TheMap : MonoBehaviour
 		}
 	}
 
-	public void dropSword(Vector2 pPosition, Vector2 pDirection, bool isPlayer, TheCell owner)
+	public void DropSword(Vector2 pPosition, Vector2 pDirection, bool isPlayer, TheCell owner)
 	{
 		GameObject go = Instantiate (swordPrefab.gameObject);
 		go.GetComponent<RectTransform> ().SetParent (transform);
