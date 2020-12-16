@@ -2,7 +2,8 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class mapRow : MonoBehaviour 
+[System.Serializable]
+public struct MapRow 
 {
-	public TheCell[] Columns;
+	public TheCell[] columns;
 }

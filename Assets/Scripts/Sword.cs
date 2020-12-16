@@ -19,7 +19,7 @@ public class Sword : MonoBehaviour
 		rt.anchoredPosition = startPoint;
 		flying = true;
 		playerBy = isPlayer;
-		endPoint = startPoint + pDirection * 3 * 120;
+		endPoint = startPoint + pDirection * 3 * TheMap.cellSize;
 		direction = pDirection;
 		gameObject.SetActive (true);
 		Sounds.Play (SoundType.DROP);
@@ -64,15 +64,15 @@ public class Sword : MonoBehaviour
 
 	void checkPoint(float pX, float pY)
 	{
-		int XX = pX < 0 ? -1 : (int)(pX / 120);
-		int YY = pY < 0 ? -1 : (int)(pY / 120);
+		int XX = pX < 0 ? -1 : (int)(pX / TheMap.cellSize);
+		int YY = pY < 0 ? -1 : (int)(pY / TheMap.cellSize);
 
 		// сначала проверяем не ударилось ли в препятствие
 		hitType ht = hitType.NONE;
 		if (XX < 0 || XX > 7 || YY < 0 || YY > 5)
 			ht = hitType.FOREST;
 		else
-			ht = TheMap.instance.rows [YY].Columns[XX].hit(playerBy);
+			ht = TheMap.instance.rows [YY].columns[XX].hit(playerBy);
 
 		if (playerBy)
 		{
