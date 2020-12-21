@@ -6,23 +6,38 @@ using UnityEngine.Tilemaps;
 public class TMap : MonoBehaviour
 {
     [SerializeField]
-    private Tilemap map;
+    private Tilemap tileMap;
 
     [SerializeField]
-    private Tile[] _tiles;
-    // Start is called before the first frame update
+    private TileBase[] _tiles;
+
+    private byte[] map;
     void Start()
     {
-        map.size = new Vector3Int(10, 10, 0);
-        map.SetTile(new Vector3Int(0,0,0), _tiles[0]);
-        map.SetTile(new Vector3Int(1,0,0), _tiles[0]);
-        map.SetTile(new Vector3Int(2,0,0), _tiles[0]);
-        map.SetTile(new Vector3Int(0,1,0), _tiles[0]);
+        map = MapData.Map.DeepClone();
+        tileMap.size = new Vector3Int(6, 8, 0);
+        LoadScreen(Vector2Int.one);
     }
 
-    // Update is called once per frame
-    void Update()
+    int offset(Vector2 pPoint)
     {
-        
+        return (int) (pPoint.x * 48 + pPoint.y * 48 * 8);
     }
+    
+    public void LoadScreen(Vector2Int pPoint)
+    {
+        int start = offset(pPoint);
+        Vector3Int point = Vector3Int.zero;
+        while (point.y < 6)
+        {
+            point.x = 0;
+            while (point.x < 8)
+            {
+                tileMap.SetTile(point, _tiles[ map[start++]]);
+                point.x++;
+            }
+            point.y++;
+        }
+    }
+
 }

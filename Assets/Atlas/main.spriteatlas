@@ -19,15 +19,15 @@ SpriteAtlas:
       generateMipMaps: 0
       readable: 0
       crunchedCompression: 0
-      sRGB: 0
+      sRGB: 1
     platformSettings:
     - serializedVersion: 3
       m_BuildTarget: DefaultTexturePlatform
       m_MaxTextureSize: 2048
       m_ResizeAlgorithm: 0
-      m_TextureFormat: 4
-      m_TextureCompression: 1
-      m_CompressionQuality: 50
+      m_TextureFormat: -1
+      m_TextureCompression: 0
+      m_CompressionQuality: 100
       m_CrunchedCompression: 0
       m_AllowsAlphaSplitting: 0
       m_Overridden: 0
@@ -45,6 +45,7 @@ SpriteAtlas:
     - {fileID: 102900000, guid: 1367afde8d501e747bbb173fcb3f4964, type: 3}
     - {fileID: 102900000, guid: f03977e76e857c147a9866513e147a3d, type: 3}
     - {fileID: 102900000, guid: 1dfc306fd7275684f901d3ad01b1e65b, type: 3}
+    - {fileID: 102900000, guid: 320a9c9d1b50aed408a3a2c7ff1307ac, type: 3}
     bindAsDefault: 1
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
@@ -76,7 +77,6 @@ SpriteAtlas:
   - {fileID: 21300002, guid: 409ce3b624b10444b91d743c54540f3f, type: 3}
   - {fileID: 21300006, guid: 409ce3b624b10444b91d743c54540f3f, type: 3}
   - {fileID: 21300000, guid: e925f7273d8dbca43ac206fd6fb44a98, type: 3}
-  - {fileID: 21300000, guid: d89d3b375d47bda4aa8383618ce15408, type: 3}
   - {fileID: 21300000, guid: ac0eb46713c55de4daaf568ef6573f06, type: 3}
   - {fileID: 21300002, guid: e75e37f7eca492145a16891e968a7072, type: 3}
   - {fileID: 21300000, guid: e75e37f7eca492145a16891e968a7072, type: 3}
@@ -135,7 +135,6 @@ SpriteAtlas:
   - {fileID: 21300004, guid: 6f8371beaab4dd94ebeccdf07b9d6570, type: 3}
   - {fileID: 21300014, guid: 6f8371beaab4dd94ebeccdf07b9d6570, type: 3}
   - {fileID: 21300002, guid: 6f8371beaab4dd94ebeccdf07b9d6570, type: 3}
-  - {fileID: 21300000, guid: 0f5c610f78f8d9f45aafb42a9eaf8465, type: 3}
   - {fileID: 21300000, guid: 7833855facca8e84fadb43aa392230dc, type: 3}
   - {fileID: 21300000, guid: c6d2468f6e769464f8c4e950b3967b86, type: 3}
   - {fileID: 21300006, guid: 29da5b9f2893829468f6de595abf86d7, type: 3}
@@ -176,7 +175,6 @@ SpriteAtlas:
   - upp_M
   - upp_L
   - sword
-  - score
   - cheese
   - kl_1
   - kl_0
@@ -235,7 +233,6 @@ SpriteAtlas:
   - 10.bereg1
   - 13_bereg_4
   - 02_water1
-  - RLY
   - palm1
   - tree3
   - rber_3
